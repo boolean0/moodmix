@@ -19,6 +19,7 @@ app.secret_key = 'asdfasdfasdf'
 
 @app.route("/")
 def login():
+     print("here")
      auth_url = create_spotify_oauth().get_authorize_url()
      return redirect(auth_url)
 
@@ -81,7 +82,7 @@ def create_spotify_oauth():
      return SpotifyOAuth (
           client_id = CLIENT_ID,
           client_secret = CLIENT_SECRET,
-          redirect_uri = url_for('redirect_page', external = True), 
+          redirect_uri = url_for('redirect_page', _external = True), 
           scope = 'user-read-private user-library-read playlist-modify-public'
      )
 
