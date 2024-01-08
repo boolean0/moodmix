@@ -9,17 +9,16 @@ load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
 CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-
-
+SESSION_KEY = os.getenv("SESSION_KEY")
 
 app = Flask(__name__)
 
 app.config['SESSION_COOKIE_NAME'] = 'cookie name'
-app.secret_key = 'asdfasdfasdf'
+app.secret_key = SESSION_KEY
+
 
 @app.route("/")
 def login():
-     print("here")
      auth_url = create_spotify_oauth().get_authorize_url()
      return redirect(auth_url)
 
@@ -85,5 +84,8 @@ def create_spotify_oauth():
           redirect_uri = url_for('redirect_page', _external = True), 
           scope = 'user-read-private user-library-read playlist-modify-public'
      )
+
+
+     
 
 app.run(debug=True)
