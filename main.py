@@ -4,7 +4,7 @@ import time
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from flask import Flask, request, url_for, session, redirect
-
+from gpt import get_recs_from_gpt
 load_dotenv()
 
 CLIENT_ID = os.getenv("CLIENT_ID")
@@ -31,7 +31,7 @@ def redirect_page():
      return redirect(url_for('song_search', external = True))
 
  
-@app.route('/songSearch') #pass artist and track title parameters
+@app.route('/songSearch') #pass artist parameter
 def song_search(): 
      track_ids = []
      try:
@@ -39,14 +39,15 @@ def song_search():
      except:
           print("not logged in")
           return redirect('/')
-     
      cur_client = spotipy.Spotify(auth=token_info['access_token']) #loop w gpt responses here
-     artist = 'keshi'
-     track_title = 'drunk'
-     query = f'{track_title} artist:{artist}'
-     tracks_returned = cur_client.search(q=query, limit=1, type='track')
-     track_id = tracks_returned['tracks']['items'][0]['id']
-     track_ids.append(track_id)
+     artist_and_songs = get_recs_from_gpt('sad', 'itzy, blackpink')
+     for artist_and_song in artist_and_songs:
+          artist, track_title = artist_and_song
+          query = f'{track_title} artist:{artist}'
+          tracks_returned = cur_client.search(q=query, limit=1, type='track')
+          if tracks_returned and tracks_returned['tracks'] and tracks_returned['tracks']['items'] and tracks_returned['tracks']['items'][0] and tracks_returned['tracks']['items'][0]['id']:
+               track_id = tracks_returned['tracks']['items'][0]['id']
+               track_ids.append(track_id)
      if len(tracks_returned) == 0:
           return 'no tracks found'
      else:
@@ -60,7 +61,7 @@ def create_playlist_with_recs(cur_client, track_ids):
           user_id = cur_client.current_user()['id']
           playlist = cur_client.user_playlist_create(user_id, 'Test Playlist', True, False, 'test playlist')
           cur_client.user_playlist_add_tracks(user_id, playlist['id'], track_ids)
-          return 'good'
+          return playlist['id']
 
 
 def get_token():

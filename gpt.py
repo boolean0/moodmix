@@ -30,6 +30,3 @@ def parse_gpt_result(resp_content):
 
 
 
-
-
-get_recs_from_gpt('sad', 'itzy, blackpink')
