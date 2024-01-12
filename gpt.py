@@ -8,7 +8,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def get_recs_from_gpt(user_mood, user_artists): 
-    msg = f'{user_mood} songs from {user_artists} in one list in the form \' artist +-+ song \', no additional text, scramble the order, no quotation marks, at least 10 songs'
+    num_artists = user_artists.count(',') + 1
+    msg = f'{user_mood} songs from {user_artists} in one list in the form \' artist +-+ song \', no additional text, scramble the order, no quotation marks, at least {num_artists*5} songs'
     resp = client.chat.completions.create(
         temperature=0.3,
         model='gpt-3.5-turbo', 

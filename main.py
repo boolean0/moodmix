@@ -31,7 +31,7 @@ def redirect_page():
      return redirect(url_for('song_search', external = True))
 
  
-@app.route('/songSearch') #pass artist parameter
+@app.route('/songSearch') #pass mood parameter
 def song_search(): 
      track_ids = []
      try:
@@ -40,7 +40,9 @@ def song_search():
           print("not logged in")
           return redirect('/')
      cur_client = spotipy.Spotify(auth=token_info['access_token']) #loop w gpt responses here
-     artist_and_songs = get_recs_from_gpt('sad', 'itzy, blackpink')
+
+     top_artists = get_top_artists_comma_sep(cur_client)
+     artist_and_songs = get_recs_from_gpt('party', top_artists) # take input here
      for artist_and_song in artist_and_songs:
           artist, track_title = artist_and_song
           query = f'{track_title} artist:{artist}'
@@ -51,7 +53,7 @@ def song_search():
      if len(tracks_returned) == 0:
           return 'no tracks found'
      else:
-          return create_playlist_with_recs(cur_client, track_ids)
+          return create_playlist_with_recs(cur_client, track_ids)     
           
 
 def create_playlist_with_recs(cur_client, track_ids):
@@ -83,9 +85,20 @@ def create_spotify_oauth():
           client_id = CLIENT_ID,
           client_secret = CLIENT_SECRET,
           redirect_uri = url_for('redirect_page', _external = True), 
-          scope = 'user-read-private user-library-read playlist-modify-public'
+          scope = 'user-read-private user-library-read playlist-modify-public user-top-read'
      )
 
+@app.route('/topArtists')
+def get_top_artists_comma_sep(cur_client):
+     cs_artists = ''
+     top_artists = cur_client.current_user_top_artists(limit=10)
+     if top_artists['items']:
+          for artist_info in top_artists['items']:
+               cs_artists = f'{cs_artists}, {artist_info["name"]}'
+     
+     if len(cs_artists) > 0: # rm extraneous comma
+          cs_artists = cs_artists[1:]
+     return cs_artists
 
      
 
